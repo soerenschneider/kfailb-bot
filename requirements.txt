@@ -1,0 +1,6 @@
+python-telegram-bot
+redis
+backoff
+psycopg2-binary
+dataclasses-json
+configargparse
