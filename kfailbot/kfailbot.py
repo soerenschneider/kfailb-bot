@@ -72,9 +72,9 @@ class KFailBot:
                     continue
 
                 if not self.is_already_processed(obj.hash):
-                    logging.info("Object not seen before: %s", str(obj))
+                    logging.debug("Object not seen before: %s", str(obj))
                 else:
-                    logging.info("Ignoring known object %s", obj.hash)
+                    logging.debug("Ignoring known object %s", obj.hash)
 
             except KeyError:
                 logging.error("Missing 'data' attribute msg: %s", payload)

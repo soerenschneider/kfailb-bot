@@ -1,13 +1,13 @@
 from unittest import TestCase
 
-from kfailbot import bla
+from kfailbot import kfailbot
 
 class TestKFailBot(TestCase):
     def test_decode_empty(self):
-        assert None is bla.KFailBot.decode("")
+        assert None is kfailbot.KFailBot.decode("")
 
     def test_decode_nil(self):
-        assert None is bla.KFailBot.decode(None)
+        assert None is kfailbot.KFailBot.decode(None)
 
     def test_decode_int(self):
-        assert None is bla.KFailBot.decode(5)
+        assert None is kfailbot.KFailBot.decode(5)
