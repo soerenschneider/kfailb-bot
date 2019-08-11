@@ -2,6 +2,7 @@ import logging
 import time
 
 import psycopg2
+import backoff
 from kfailbot import *
 
 class DbBackend:
@@ -12,28 +13,17 @@ class DbBackend:
     _silence_table = "silence"
 
     def __init__(self, host, user, password, db_name='kfailbot', table_name='kfailbot'):
-        self._host = host
-        self._user = user
-        self._password = password
         self._table_name = table_name
 
-        retries = self._reconnect_retries
-        connected = False
         logging.info(f'Trying to connect to database on {host}')
-        while retries >= 0 and not connected:
-            try:
-                self._db = psycopg2.connect(host=host, user=user, password=password, dbname=db_name)
-                connected = True
-                logging.info(f'Successfully connected to database')
-            except psycopg2.OperationalError as e:
-                retries -= 1
-                sleep = self._reconnect_retries - retries
-                logging.info(f"Can't connect to db, trying again in {sleep} seconds: {e}")
-                time.sleep(sleep)
+        self._db = self.__init_db(host, user, password, db_name)
+        logging.info(f'Successfully connected to database')
 
-        if not connected:
-            logging.fatal("Couldn't connect to database, giving up. ")
-            raise Exception("Can't connect to DB.")
+    @backoff.on_exception(backoff.expo,
+                          psycopg2.OperationalError,
+                          max_time=300)
+    def __init_db(self, host, user, password, db_name):
+        return psycopg2.connect(host=host, user=user, password=password, dbname=db_name)
 
     def unsubscribe_from_all_lines(self, subscriber):
         """

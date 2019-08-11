@@ -73,6 +73,8 @@ class KFailBot:
 
                 if not self.is_already_processed(obj.hash):
                     logging.debug("Object not seen before: %s", str(obj))
+                    msg = IncidentFormatter.format_incident(obj)
+                    self._notifier.send_message(msg, obj.line)
                 else:
                     logging.debug("Ignoring known object %s", obj.hash)
 

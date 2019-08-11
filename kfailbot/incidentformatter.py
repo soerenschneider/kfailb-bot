@@ -11,17 +11,13 @@ class IncidentFormatter:
             return ""
 
         ret = ""
-        ret += "*" + incident['what'] + "* \n"
+        ret += "*" + incident.what + "* \n"
 
-        if 'direction' in incident:
-            ret += "_" + incident['direction'] + "_ \n"
+        if incident.direction:
+            ret += "_" + incident.direction + "_ \n"
 
-        if 'stations' in incident:
-            for station in incident['stations']:
-                if 'station' in station and 'time' in station:
-                    ret += f"{station['station']}:{station['time']}" + "\n"
-                else:
+        if incident.stations:
+            for station in incident.stations:
                     ret += f"{station}" + "\n"
-        ret += "\n"
 
         return ret
