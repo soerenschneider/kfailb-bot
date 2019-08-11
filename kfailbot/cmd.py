@@ -2,7 +2,7 @@ import logging
 
 import configargparse
 
-from kfailbot import kfailbot
+from kfailbot import bot
 
 
 def parse_args():
@@ -46,5 +46,5 @@ def setup_logging(args):
 if __name__ == "__main__":
     args = parse_args()
     setup_logging(args)
-    kfailbot = kfailbot.KFailBot(args)
+    kfailbot = bot.KFailBot(args)
     kfailbot.start()
