@@ -10,7 +10,7 @@ class IncidentFormatter:
         if not incident:
             return ""
 
-        ret = ""
+        ret = f"Line {incident.line}\n"
         ret += "*" + incident.what + "* \n"
 
         if incident.direction:
@@ -18,6 +18,6 @@ class IncidentFormatter:
 
         if incident.stations:
             for station in incident.stations:
-                    ret += f"{station}" + "\n"
+                ret += f"{station}" + "\n"
 
         return ret

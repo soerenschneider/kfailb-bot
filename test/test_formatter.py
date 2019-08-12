@@ -1,30 +1,30 @@
 from unittest import TestCase
 
 from kfailbot import incidentformatter
-from kfailbot import Incident
+from kfailbot import Incident, Station
 
 
 class TestFormatter(TestCase):
 
     def test_format_incident_2(self):
-        direction = 'Klettenbergpark -> Herler Str.'
         what = 'Folgende Fahrt entfällt'
-        line = 18
+        line = 15
         stations = list()
+        stations.append(Station('Klettenbergpark', '12:26h'))
+        stations.append(Station('Barbarossaplatz', '12:38h'))
+        stations.append(Station('Neumarkt','12:41h'))
+        stations.append(Station('Dom/Hbf','12:44h'))
+        stations.append(Station('Ebertplatz','12:47h'))
+        stations.append(Station('Reichenspergerpl.','12:48h'))
+        stations.append(Station('Wiener Platz','12:55h'))
+        stations.append(Station('Herler Str.','12:58h'))
         incident = Incident(line=line, what=what, stations=stations)
-        print(incident)
-        stations.append('Klettenbergpark (12:26h)')
-        stations.append('Barbarossaplatz (12:38h)')
-        stations.append('Neumarkt (12:41h)')
-        stations.append('Dom/Hbf (12:44h)')
-        stations.append('Ebertplatz (12:47h)')
-        stations.append('Reichenspergerpl. (12:48h)')
-        stations.append('Wiener Platz (12:55h)')
-        stations.append('Herler Str. (12:58h)')
-
 
         output = incidentformatter.IncidentFormatter.format_incident(incident)
-        expected = """*Folgende Fahrt entfällt* 
+        print(output)
+        expected = """Line 15
+*Folgende Fahrt entfällt* 
+_Klettenbergpark -> Herler Str._ 
 Klettenbergpark (12:26h)
 Barbarossaplatz (12:38h)
 Neumarkt (12:41h)

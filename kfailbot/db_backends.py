@@ -3,7 +3,7 @@ import time
 
 import psycopg2
 import backoff
-from kfailbot import *
+from kfailbot import kfailb_data
 
 class DbBackend:
     """
@@ -166,6 +166,6 @@ class DbBackend:
             ret = cursor.fetchone()
 
         if not ret:
-            return Silence()
+            return kfailb_data.Silence()
 
-        return Silence(ret[0], ret[1])
+        return kfailb_data.Silence(ret[0], ret[1])
