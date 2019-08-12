@@ -96,7 +96,7 @@ class KFailBTelegramBot:
         if not text or not line:
             raise ValueError('"text" or "line" empty.')
 
-        recipients = self.get_ids_for_subscriber(line)
+        recipients = self._db.get_subscribers(line)
         for recipient in recipients:
             recipient = str(recipient)
 
