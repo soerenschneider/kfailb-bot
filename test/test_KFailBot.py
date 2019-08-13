@@ -4,10 +4,10 @@ from kfailbot import bot
 
 class TestKFailBot(TestCase):
     def test_decode_empty(self):
-        assert None is bot.KFailBot.decode("")
+        assert None is bot.KFailBot.decode_incident("")
 
     def test_decode_nil(self):
-        assert None is bot.KFailBot.decode(None)
+        assert None is bot.KFailBot.decode_incident(None)
 
     def test_decode_int(self):
-        assert None is bot.KFailBot.decode(5)
+        assert None is bot.KFailBot.decode_incident(5)

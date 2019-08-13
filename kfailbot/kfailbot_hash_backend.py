@@ -19,7 +19,7 @@ class ProcessedHashesRedisBackend:
             return {}
 
         logging.debug(f'Read processed hashes: {hashes}')
-        return hashes.decode('utf-8')
+        return hashes.decode_incident('utf-8')
 
     def is_hash_processed(self, hash):
         """ checks whether a hash has been processed lately. """
@@ -48,6 +48,6 @@ class ProcessedHashesRedisBackend:
         cache_data = self._redis.get(self._key_all)
 
         if cache_data:
-            return json.loads(cache_data.decode('utf-8'))
+            return json.loads(cache_data.decode_incident('utf-8'))
 
         return dict()

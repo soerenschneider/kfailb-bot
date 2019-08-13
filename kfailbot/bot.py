@@ -25,7 +25,7 @@ class KFailBot:
             raise ValueError("No args provided")
 
         self._stream_name = args.stream_name
-        self._redis = self.init(args.redis_host)
+        self._redis = self._init_redis(args.redis_host)
         self._hashes_backend = ProcessedHashesRedisBackend(self._redis)
 
         self._db_backend = DbBackend(host=args.pg_host, user=args.pg_user, password=args.pg_pw, db_name=args.pg_db)
@@ -34,26 +34,44 @@ class KFailBot:
     @backoff.on_exception(backoff.expo,
                           redis.exceptions.ConnectionError,
                           max_time=300)
-    def init(self, host="localhost", port=6379, db=0):
+    def _init_redis(self, host="localhost", port=6379, db=0):
+        """
+        Initializes the redis client.
+        :param host: string, the hostname of the redis instance to connect to.
+        :param port: int, the port of the redis instance to connect to.
+        :param db: int, the database of the redis instance to connect to.
+        :return: redis.Redis, initialized redis client.
+        """
         client = redis.Redis(host=host, port=port, db=db, charset="utf-8", decode_responses=True)
         client.get("x")
         logging.info("Successfully connected to redis")
         return client
 
-    def notify_new_problems(self, incidents):
-        for incident in incidents:
-            message = IncidentFormatter.format_incident(incident)
-            message = f"*{incident['line']}* {message}"
-            self._notifier.send_message(text=message, line=incident['line'], is_markdown=True)
+    def _message_received(self, obj):
+        """
+        Called whenever a message is received. Formats the message and sends it away.
+        :param obj: Incident object that has been taken from the stream.
+        :return:
+        """
+        if obj is None:
+            return
 
-    def notify_solved_problems(self, diff):
-        for line in diff:
-            self._notifier.send_message(text=f"Problem mit Linie {line} behoben")
+        if not self._is_already_processed(obj.hash):
+            logging.debug("Object not seen before: %s", str(obj))
+            msg = IncidentFormatter.format_incident(obj)
+            self._notifier.send_message(msg, obj.line)
+        else:
+            logging.debug("Ignoring known object %s", obj.hash)
 
     @backoff.on_exception(backoff.expo,
                           redis.exceptions.ConnectionError,
                           max_time=3600)
     def read_stream(self, last_id=None):
+        """
+        Reads the stream and perfo
+        :param last_id:
+        :return:
+        """
         if last_id is None:
             last_id = '$'
 
@@ -67,29 +85,28 @@ class KFailBot:
             last_seen_id = msg_id
             try:
                 data = payload[1]["data"]
-                obj = self.decode(data)
+                obj = self.decode_incident(data)
                 if obj is None:
                     continue
 
-                if not self.is_already_processed(obj.hash):
-                    logging.debug("Object not seen before: %s", str(obj))
-                    msg = IncidentFormatter.format_incident(obj)
-                    self._notifier.send_message(msg, obj.line)
-                else:
-                    logging.debug("Ignoring known object %s", obj.hash)
-
+                self._message_received(obj)
             except KeyError:
                 logging.error("Missing 'data' attribute msg: %s", payload)
+
         return last_seen_id
 
     @staticmethod
-    def decode(string):
+    def decode_incident(string):
         try:
             return Incident.from_json(string)
         except (json.decoder.JSONDecodeError, TypeError):
             return None
 
     def start(self):
+        """
+        Start listening for incident messages.
+        :return: None
+        """
         cont = True
         logging.info("Waiting for messages on stream")
         try:
@@ -99,7 +116,13 @@ class KFailBot:
         except KeyboardInterrupt:
             cont = False
 
-    def is_already_processed(self, obj_hash):
+    def _is_already_processed(self, obj_hash):
+        """
+        Checks whether an object has already been processed in the last 10 minutes.
+        :param obj_hash: string, the hash of the object.
+        :return: True, if the object has been already seen in the last 10 minutes, otherwise
+        False.
+        """
         if not obj_hash:
             raise ValueError("No object hash given. ")
 
@@ -110,24 +133,3 @@ class KFailBot:
         # as we're only offering garbage
         self._redis.setex(name=key, time=600, value="x")
         return processed
-
-    def filter_stale_data(self):
-        """ Returns a subset of the list that has not been seen before. """
-        processed_hashes = list()
-        ret = list()
-
-        cache_data = self._hashes_backend.get_data()
-        for incident in cache_data['incidents']:
-            hashed = incident.hash
-            processed_hashes.append(hashed)
-
-            if not self._hashes_backend.is_hash_processed(hashed):
-                logging.debug(f'{hashed} [{incident}] not found in prev_processed_hashes')
-
-                # attach timestamp from original object
-                incident['timestamp'] = cache_data['time_stamp']
-                ret.append(incident)
-
-        self.hashes_backend.write_processed_hashes(processed_hashes)
-
-        return ret, []

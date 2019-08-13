@@ -5,6 +5,7 @@ import psycopg2
 import backoff
 from kfailbot import kfailb_data
 
+
 class DbBackend:
     """
     Database interaction happens solely here.

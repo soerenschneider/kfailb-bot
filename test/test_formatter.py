@@ -41,12 +41,16 @@ Herler Str. (12:58h)
         line = 155
         stations = list()
 
-        what = 'Baumaßnahme im Bereich der (H) Am Porzenacker * Dadurch fahren die Busse nicht den' \
-                           ' üblichen Linienweg * Die (H) Am Porzenacker ist in beiden Richtungen vor bzw. hinter' \
+        what = 'Baumaßnahme im Bereich der (H) Am Porzenacker. Dadurch fahren die Busse nicht den' \
+                           ' üblichen Linienweg. Die (H) Am Porzenacker ist in beiden Richtungen vor bzw. hinter' \
                            ' die die Einmündung Am Porzenacker und die (H) Klosterhof in Richtung (H) Mülheim' \
                            ' Berliner Str. bzw. (H) Ostheim ist auf die Prämonstatenerstr. hinter die Einmündung' \
-                           ' Holzweg verlegt * Die (H) Hildegundweg kann in diesem Zeitraum nicht bedient werden *'
+                           ' Holzweg verlegt. Die (H) Hildegundweg kann in diesem Zeitraum nicht bedient werden.'
         incident = Incident(line=line, what=what, stations=stations)
 
         output = incidentformatter.IncidentFormatter.format_incident(incident)
-        print(output)
+        expected = """Line 155
+*Baumaßnahme im Bereich der (H) Am Porzenacker. Dadurch fahren die Busse nicht den üblichen Linienweg. Die (H) Am Porzenacker ist in beiden Richtungen vor bzw. hinter die die Einmündung Am Porzenacker und die (H) Klosterhof in Richtung (H) Mülheim Berliner Str. bzw. (H) Ostheim ist auf die Prämonstatenerstr. hinter die Einmündung Holzweg verlegt. Die (H) Hildegundweg kann in diesem Zeitraum nicht bedient werden.* 
+"""
+        assert expected.strip() == output.strip()
+
