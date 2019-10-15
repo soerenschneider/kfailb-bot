@@ -1,15 +1,26 @@
 from unittest import TestCase
 
 from kfailbot import db_backends
-
+import psycopg2
+import os
 
 class TestDbBackend_lines(TestCase):
-    def init(self):
-        self._db = db_backends.DbBackend(host="localhost", user="kfailb", password="kfailb")
+    def setUp(self):
+        host=os.getenv("POSTGRES_HOST", "localhost")
+        user=os.getenv("POSTGRES_USER", "kfailb")
+        pw=os.getenv("POSTGRES_PASSWORD", "kfailb")
+        db=os.getenv("POSTGRES_DB", "kfailbot")
+
+        db = psycopg2.connect(host=host, user=user, password=pw, dbname=db)
+        with db.cursor() as cursor:
+            with open('postgres/init.sql','r') as sql_file:
+                cursor.execute(sql_file.read())
+        db.commit()
+        db.close()
+
+        self._db = db_backends.DbBackend(host=host, user=user, password=pw)
 
     def test_get_subscriptions(self):
-        self.init()
-
         self._db.delete_all_subscriptions()
 
         subscriber = 8327432
@@ -21,8 +32,6 @@ class TestDbBackend_lines(TestCase):
         assert len(subscriptions) == 0
 
     def test_subscribe(self):
-        self.init()
-
         self._db.delete_all_subscriptions()
 
         subscriber = 8327432
@@ -42,8 +51,6 @@ class TestDbBackend_lines(TestCase):
         assert lines[2] not in subscriptions
 
     def test_subscribe_idempotency(self):
-        self.init()
-
         self._db.delete_all_subscriptions()
 
         subscriber = 8327432
@@ -61,8 +68,6 @@ class TestDbBackend_lines(TestCase):
         assert lines[0] in subscriptions
 
     def test_subscribe_multiple_subscribers(self):
-        self.init()
-
         self._db.delete_all_subscriptions()
 
         subscriber_1 = 8327432
@@ -78,8 +83,6 @@ class TestDbBackend_lines(TestCase):
         assert len(subscribers) == 2
 
     def test_subscribe_multiple_subscribers(self):
-        self.init()
-
         self._db.delete_all_subscriptions()
 
         subscriber_1 = 8327432
@@ -98,8 +101,6 @@ class TestDbBackend_lines(TestCase):
         assert subscriber_2 in subscribers
 
     def test_unsubscribe_from_all_lines(self):
-        self.init()
-
         self._db.delete_all_subscriptions()
 
         subscriber = 8327432

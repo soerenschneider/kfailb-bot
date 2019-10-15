@@ -4,15 +4,27 @@ from datetime import datetime
 from datetime import timedelta
 
 from kfailbot import db_backends
+import psycopg2
+import os
 
 
 class TestDbBackend(TestCase):
-    def init(self):
-        self._db = db_backends.DbBackend(host="localhost", user="kfailb", password="kfailb")
+    def setUp(self):
+        host=os.getenv("POSTGRES_HOST", "localhost")
+        user=os.getenv("POSTGRES_USER", "kfailb")
+        pw=os.getenv("POSTGRES_PASSWORD", "kfailb")
+        db=os.getenv("POSTGRES_DB", "kfailbot")
+
+        db = psycopg2.connect(host=host, user=user, password=pw, dbname=db)
+        with db.cursor() as cursor:
+            with open('postgres/init.sql','r') as sql_file:
+                cursor.execute(sql_file.read())
+        db.commit()
+        db.close()
+
+        self._db = db_backends.DbBackend(host=host, user=user, password=pw)
 
     def test_read_silence_empty(self):
-        self.init()
-
         subscriber = 2121421
 
         # make sure silences are gone
@@ -25,8 +37,6 @@ class TestDbBackend(TestCase):
         assert ret.is_effective() is False
 
     def test_read_silence_empty(self):
-        self.init()
-
         subscriber = 2121421
         until = datetime.utcnow() + timedelta(minutes=30)
 
@@ -45,8 +55,6 @@ class TestDbBackend(TestCase):
         assert ret.is_effective() is True   # the silence is effective right now
 
     def test_read_silence_delete(self):
-        self.init()
-
         subscriber = 2121421
         until = datetime.utcnow() + timedelta(minutes=30)
 
@@ -71,8 +79,6 @@ class TestDbBackend(TestCase):
         assert ret.is_effective() is False
 
     def test_read_silence_update(self):
-        self.init()
-
         subscriber = 2121421
         until = datetime.utcnow() + timedelta(minutes=30)
         complete_silence = True

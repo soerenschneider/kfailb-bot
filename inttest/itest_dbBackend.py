@@ -2,12 +2,26 @@ import unittest
 from unittest import TestCase
 
 from kfailbot.db_backends import DbBackend
+import psycopg2
+import os
 
 
 class TestDbBackend(TestCase):
-    backend = DbBackend(host='localhost', user='kfailb', password='kfailb')
-
+    
     def setUp(self):
+        host=os.getenv("POSTGRES_HOST", "localhost")
+        user=os.getenv("POSTGRES_USER", "kfailb")
+        pw=os.getenv("POSTGRES_PASSWORD", "kfailb")
+        db=os.getenv("POSTGRES_DB", "kfailbot")
+
+        db = psycopg2.connect(host=host, user=user, password=pw, dbname=db)
+        with db.cursor() as cursor:
+            with open('postgres/init.sql','r') as sql_file:
+                cursor.execute(sql_file.read())
+        db.commit()
+        db.close()
+
+        self.backend = DbBackend(host=host, user=user, password=pw)
         self.backend.delete_all_subscriptions()
 
     def test_subscribe_to_line_simple(self):
