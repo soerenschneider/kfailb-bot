@@ -1,8 +1,8 @@
 unittests: 
 	venv/bin/python3 -m unittest test/test_*.py
 
-.PHONY: inttests
-inttests: 
+.PHONY: integrationtests
+integrationtests: 
 	venv/bin/python3 -m unittest inttest/itest_*.py
 
 .PHONY: venv
