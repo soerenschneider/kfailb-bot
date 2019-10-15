@@ -1,5 +1,28 @@
 stages:
+  - test
   - build_and_push
+
+test:unit:
+  stage: test
+  script:
+  - apt-get update && apt-get install -y make
+  - make venv
+  - make unittests
+
+test:int:
+  variables:
+    POSTGRES_HOST: db
+    POSTGRES_DB: kfailbot
+    POSTGRES_USER: kfailb
+    POSTGRES_PASSWORD: kfailb
+  stage: test
+  services:
+  - name: postgres:11
+    alias: db
+  script:
+  - apt-get update && apt-get install -y make
+  - make venv
+  - make integrationtests
 
 build_and_push:
   image: docker:latest
