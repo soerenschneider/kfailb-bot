@@ -6,7 +6,9 @@ import json
 class ProcessedHashesRedisBackend:
     _key_all = "kfailb_all"
 
-    def __init__(self, redis_client, key='kfailbot_processed_hashes', expire_time_seconds=3600):
+    def __init__(
+        self, redis_client, key="kfailbot_processed_hashes", expire_time_seconds=3600
+    ):
         self._redis = redis_client
         self._key = key
         self.expire_time_seconds = expire_time_seconds
@@ -15,11 +17,11 @@ class ProcessedHashesRedisBackend:
         """ returns a list of hashes"""
         hashes = self._redis.get(self._key)
         if not hashes:
-            logging.debug(f'No previously processed hashes found')
+            logging.debug("No previously processed hashes found")
             return {}
 
-        logging.debug(f'Read processed hashes: {hashes}')
-        return hashes.decode_incident('utf-8')
+        logging.debug("Read processed hashes: %s", hashes)
+        return hashes.decode_incident("utf-8")
 
     def is_hash_processed(self, hash):
         """ checks whether a hash has been processed lately. """
@@ -48,6 +50,6 @@ class ProcessedHashesRedisBackend:
         cache_data = self._redis.get(self._key_all)
 
         if cache_data:
-            return json.loads(cache_data.decode_incident('utf-8'))
+            return json.loads(cache_data.decode_incident("utf-8"))
 
         return dict()

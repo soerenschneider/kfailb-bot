@@ -13,9 +13,6 @@ from kfailbot import KFailBTelegramBot
 from kfailbot import IncidentFormatter
 from kfailbot import Incident
 
-_last_messages = {}
-_db_backend = None
-
 
 class KFailBot:
     _hash_key = "kfailb_hashes_{}"
@@ -28,12 +25,15 @@ class KFailBot:
         self._redis = self._init_redis(args.redis_host)
         self._hashes_backend = ProcessedHashesRedisBackend(self._redis)
 
-        self._db_backend = DbBackend(host=args.pg_host, user=args.pg_user, password=args.pg_pw, db_name=args.pg_db)
+        self._db_backend = DbBackend(
+            host=args.pg_host,
+            user=args.pg_user,
+            password=args.pg_pw,
+            db_name=args.pg_db,
+        )
         self._notifier = KFailBTelegramBot(args.token, self._db_backend)
 
-    @backoff.on_exception(backoff.expo,
-                          redis.exceptions.ConnectionError,
-                          max_time=300)
+    @backoff.on_exception(backoff.expo, redis.exceptions.ConnectionError, max_time=300)
     def _init_redis(self, host="localhost", port=6379, db=0):
         """
         Initializes the redis client.
@@ -42,7 +42,9 @@ class KFailBot:
         :param db: int, the database of the redis instance to connect to.
         :return: redis.Redis, initialized redis client.
         """
-        client = redis.Redis(host=host, port=port, db=db, charset="utf-8", decode_responses=True)
+        client = redis.Redis(
+            host=host, port=port, db=db, charset="utf-8", decode_responses=True
+        )
         client.get("x")
         logging.info("Successfully connected to redis")
         return client
@@ -63,9 +65,7 @@ class KFailBot:
         else:
             logging.debug("Ignoring known object %s", obj.hash)
 
-    @backoff.on_exception(backoff.expo,
-                          redis.exceptions.ConnectionError,
-                          max_time=3600)
+    @backoff.on_exception(backoff.expo, redis.exceptions.ConnectionError, max_time=3600)
     def read_stream(self, last_id=None):
         """
         Reads the stream and perfo
@@ -73,7 +73,7 @@ class KFailBot:
         :return:
         """
         if last_id is None:
-            last_id = '$'
+            last_id = "$"
 
         streams = {self._stream_name: last_id}
         incidents = self._redis.xread(streams, count=100, block=0)

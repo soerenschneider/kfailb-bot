@@ -13,11 +13,12 @@ class Station:
     """
     Tuple of a station and a given time.
     """
+
     station: str
     time: str
 
     def __repr__(self):
-        return f'{self.station} ({self.time})'
+        return f"{self.station} ({self.time})"
 
 
 @dataclass_json
@@ -26,6 +27,7 @@ class Incident:
     """
     Holds information about a single incident.
     """
+
     # what line is affected by the incident.
     line: int
 
@@ -55,8 +57,9 @@ class Incident:
         :return: None if there are no stations, otherwise a string that denotes the direction.
         """
         if self.stations:
-            return "{} -> {}".format(self.stations[0].station,
-                                     self.stations[len(self.stations)-1].station)
+            return "{} -> {}".format(
+                self.stations[0].station, self.stations[len(self.stations) - 1].station
+            )
 
         return None
 
@@ -66,12 +69,12 @@ class Incident:
         :return: the hash
         """
         representation = str(self)
-        sha256 = hashlib.sha256(representation.encode('utf-8')).hexdigest()[:15]
+        sha256 = hashlib.sha256(representation.encode("utf-8")).hexdigest()[:15]
 
         return sha256
 
     def __repr__(self):
-        return f'{self.line}: {self.direction}: {self.what}\n{self.stations}\n'
+        return f"{self.line}: {self.direction}: {self.what}\n{self.stations}\n"
 
 
 @dataclass

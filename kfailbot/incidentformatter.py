@@ -1,4 +1,3 @@
-
 class IncidentFormatter:
     @staticmethod
     def format_incident(incident):

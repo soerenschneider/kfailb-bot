@@ -1,5 +1,4 @@
 import logging
-import time
 
 import psycopg2
 import backoff
@@ -10,19 +9,18 @@ class DbBackend:
     """
     Database interaction happens solely here.
     """
+
     _reconnect_retries = 5
     _silence_table = "silence"
 
-    def __init__(self, host, user, password, db_name='kfailbot', table_name='kfailbot'):
+    def __init__(self, host, user, password, db_name="kfailbot", table_name="kfailbot"):
         self._table_name = table_name
 
-        logging.info(f'Trying to connect to database on {host}')
+        logging.info(f"Trying to connect to database on {host}")
         self._db = self.__init_db(host, user, password, db_name)
-        logging.info(f'Successfully connected to database')
+        logging.info(f"Successfully connected to database")
 
-    @backoff.on_exception(backoff.expo,
-                          psycopg2.OperationalError,
-                          max_time=300)
+    @backoff.on_exception(backoff.expo, psycopg2.OperationalError, max_time=300)
     def __init_db(self, host, user, password, db_name):
         return psycopg2.connect(host=host, user=user, password=password, dbname=db_name)
 
@@ -122,8 +120,10 @@ class DbBackend:
             raise Exception("You can only submit a single subscriber")
 
         with self._db.cursor() as cursor:
-            sql = f"INSERT INTO {self._silence_table} VALUES(%s, %s, %s)" \
+            sql = (
+                f"INSERT INTO {self._silence_table} VALUES(%s, %s, %s)"
                 f" ON CONFLICT (subscriber) DO UPDATE SET until = %s, mute = %s WHERE {self._silence_table}.subscriber = %s;"
+            )
             cursor.execute(sql, (subscriber, until, mute, until, mute, subscriber))
 
         self._db.commit()
