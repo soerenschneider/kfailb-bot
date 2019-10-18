@@ -3,7 +3,7 @@ stages:
   - build_and_push
 
 test:unit:
-  image: python:3-slim-buster
+  image: python:3.7-slim-buster
   stage: test
   script:
   - apt-get update && apt-get install -y make
@@ -11,7 +11,7 @@ test:unit:
   - make unittests
 
 test:int:
-  image: python:3-slim-buster
+  image: python:3.7-slim-buster
   variables:
     POSTGRES_HOST: db
     POSTGRES_DB: kfailbot
