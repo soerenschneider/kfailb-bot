@@ -4,6 +4,7 @@ COPY requirements.txt /opt/kfailbot/requirements.txt
 WORKDIR /opt/kfailbot
 RUN pip install --no-cache-dir -r requirements.txt
 
+COPY postgres/* /opt/kfailbot/postgres/
 COPY kfailbot/* /opt/kfailbot/
 
 RUN useradd toor
