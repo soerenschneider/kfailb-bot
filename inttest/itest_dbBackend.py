@@ -16,7 +16,7 @@ class TestDbBackend(TestCase):
 
         db = psycopg2.connect(host=host, user=user, password=pw, dbname=db)
         with db.cursor() as cursor:
-            with open('postgres/init.sql','r') as sql_file:
+            with open('postgres/01-init.sql','r') as sql_file:
                 cursor.execute(sql_file.read())
         db.commit()
         db.close()
