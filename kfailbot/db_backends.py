@@ -14,15 +14,40 @@ class DbBackend:
     _silence_table = "silence"
 
     def __init__(self, host, user, password, db_name="kfailbot", table_name="kfailbot"):
+        self._host = host
+        self._user = user
+        self._password= password
+        self._db_name = db_name
         self._table_name = table_name
 
         logging.info(f"Trying to connect to database on {host}")
-        self._db = self.__init_db(host, user, password, db_name)
+        self._connection_test()
         logging.info(f"Successfully connected to database")
+        self._create_tables()
+
+        self._db = self.__init_db(host, user, password, db_name)
+
+    @backoff.on_exception(backoff.expo,
+                      psycopg2.DatabaseError,
+                      max_tries=15)
+    def _connection_test(self):
+        with psycopg2.connect(host=self._host, user=self._user, password=self._password, dbname=self._db_name) as db:
+            with db.cursor() as cursor:
+                cursor.execute("SELECT 1")
+
+    @backoff.on_exception(backoff.expo,
+                      psycopg2.DatabaseError,
+                      max_tries=15)
+    def _create_tables(self):
+        with psycopg2.connect(host=self._host, user=self._user, password=self._password, dbname=self._db_name) as db:
+            with db.cursor() as cursor:
+                with open('postgres/01-init.sql','r') as sql_file:
+                    cursor.execute(sql_file.read())
+            db.commit()
 
     @backoff.on_exception(backoff.expo, psycopg2.OperationalError, max_time=300)
-    def __init_db(self, host, user, password, db_name):
-        return psycopg2.connect(host=host, user=user, password=password, dbname=db_name)
+    def __init_db(self):
+        return psycopg2.connect(host=self._host, user=self._user, password=self._password, dbname=self._db_name)
 
     def unsubscribe_from_all_lines(self, subscriber):
         """
