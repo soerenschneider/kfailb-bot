@@ -13,11 +13,17 @@ class DbBackend:
     _reconnect_retries = 5
     _silence_table = "silence"
 
-    def __init__(self, host, user, password, db_name="kfailbot", table_name="kfailbot"):
+    def __init__(self, host, user, password, db_name=None, table_name=None):
         self._host = host
         self._user = user
         self._password= password
+
+        if not db_name:
+            db_name = "kfailbot"
         self._db_name = db_name
+
+        if not table_name:
+            table_name = "kfailbot"
         self._table_name = table_name
 
         logging.info(f"Trying to connect to database on {host}")
@@ -25,7 +31,7 @@ class DbBackend:
         logging.info(f"Successfully connected to database")
         self._create_tables()
 
-        self._db = self.__init_db(host, user, password, db_name)
+        self._db = self.__init_db()
 
     @backoff.on_exception(backoff.expo,
                       psycopg2.DatabaseError,
